@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mock Lighting Controller</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+  <style>
+    :root {
+      --bg: #16181c;
+      --panel: #1e2127;
+      --border: #2a2e35;
+      --text: #d8dbe0;
+      --muted: #7b8190;
+      --accent: #e8a33d; /* dimmer-board amber */
+      --rx: #4fb3a9;
+      --tx: #e8a33d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 14px;
+      padding: 24px;
+    }
+    h1 {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 20px;
+    }
+    h1 span { color: var(--accent); }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+    }
+    .panel h2 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 0 0 12px;
+    }
+    .space-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .space {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px;
+    }
+    .space .num { color: var(--muted); font-size: 11px; text-align: center; }
+    .space .preset { font-size: 18px; color: var(--accent); text-align: center; margin-bottom: 6px; }
+    .zone-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 3px;
+    }
+    .zone {
+      aspect-ratio: 1;
+      border-radius: 2px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .log-entry {
+      display: flex;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12.5px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .log-entry:last-child { border-bottom: none; }
+    .dir { flex-shrink: 0; width: 24px; font-weight: 600; }
+    .dir.rx { color: var(--rx); }
+    .dir.tx { color: var(--tx); }
+    .log-panel { max-height: 480px; overflow-y: auto; }
+    .status { color: var(--muted); font-size: 11px; margin-top: 12px; }
+  </style>
+</head>
+<body x-data="dashboard()" x-init="init()">
+
+  <h1>Mock Lighting Controller <span>/dashboard</span></h1>
+
+  <div class="grid">
+
+    <div class="panel">
+      <h2>Spaces</h2>
+      <div class="space-grid">
+        <template x-for="[num, space] in Object.entries(state.spaces || {})" :key="num">
+          <div class="space">
+            <div class="num" x-text="'Space ' + num"></div>
+            <div class="preset" x-text="space.active_preset"></div>
+            <div class="zone-grid">
+              <template x-for="[znum, level] in Object.entries(space.zones || {})" :key="znum">
+                <div class="zone"
+                     :title="'Zone ' + znum + ': ' + level"
+                     :style="'background: rgba(232, 163, 61, ' + (level / 255) + ')'">
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+      <div class="status" x-text="'Last updated: ' + lastUpdated"></div>
+    </div>
+
+    <div class="panel log-panel">
+      <h2>Packet Log</h2>
+      <template x-for="entry in [...log].reverse()" :key="entry.timestamp">
+        <div class="log-entry">
+          <span class="dir" :class="entry.direction" x-text="entry.direction"></span>
+          <span x-text="entry.raw_ascii"></span>
+        </div>
+      </template>
+    </div>
+
+  </div>
+
+  <script>
+    function dashboard() {
+      return {
+        state: { spaces: {} },
+        log: [],
+        lastUpdated: '—',
+
+        async init() {
+          await this.refresh();
+          setInterval(() => this.refresh(), 2000);
+        },
+
+        async refresh() {
+          const [stateRes, logRes] = await Promise.all([
+            fetch('/state'),
+            fetch('/log'),
+          ]);
+          this.state = await stateRes.json();
+          this.log = await logRes.json();
+          this.lastUpdated = new Date().toLocaleTimeString();
+        },
+      };
+    }
+  </script>
+
+</body>
+</html>
