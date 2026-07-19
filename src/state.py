@@ -2,9 +2,7 @@
 In-memory model for ETC Echo's EII module.
 
 This is the single source of truth that both the UDP listener (writer)
-and the FastAPI routes (readers, and occasionally writers via /simulate)
-touch. Everything is guarded by one asyncio.Lock since we're running in
-a single event loop — no need for anything fancier.
+and the FastAPI routes touch. Everything is guarded by asyncio.Lock.
 """
 
 import asyncio

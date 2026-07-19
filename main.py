@@ -2,7 +2,7 @@
 FastAPI control layer for the mock lighting controller.
 
 Run with:
-    uvicorn app.main:app --reload --port 8000
+    uvicorn main:app --reload --port 8000
 
 The UDP listener starts in the same event loop as FastAPI (via lifespan),
 so both share the same FixtureState with no extra IPC needed.

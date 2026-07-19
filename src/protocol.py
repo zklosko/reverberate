@@ -123,8 +123,7 @@ async def build_reply(cmd: ParsedCommand, state) -> Optional[bytes]:
     space data. That second packet can't come from this function alone;
     udp_server.py's _handle() will need a branch that, after sending
     this function's return value, also sends a second packet for
-    "sync get" specifically. Flagging this now so it's not a surprise
-    later — see the TODO in udp_server.py.
+    "sync get" specifically.
     """
     if cmd.command == "help":
         return f"{HELP_TEXT}{state.eom.value}".encode("ascii")
