@@ -5,19 +5,25 @@ with a FastAPI control layer for inspecting traffic.
 
 ## Getting started
 
+### Docker
+
+`docker run -p 9000:8000 -p 9703:4703/udp --name reverberate zklosko/reverberate`
+
+### Source
+
 ```bash
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
 This starts two things in one process/event loop:
-- A UDP listener on `0.0.0.0:8043` (change the default in `main.py`, or
+- A UDP listener on `0.0.0.0:4703` (change the default in `main.py`, or
   override at runtime via `POST /config/port`)
 - An HTTP control API on `http://localhost:8000` — Swagger docs at
   `http://localhost:8000/docs`
   - In addition, a live dashboard is available at `http://localhost:8000/dashboard`
 
-Point your plugin at `127.0.0.1:8043` instead of the real controller.
+Point your plugin at `127.0.0.1:4703` instead of the real controller.
 
 ## HTTP endpoints
 
